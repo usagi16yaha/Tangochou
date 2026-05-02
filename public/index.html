@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>単語帳</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header>
+    <h1>単語帳</h1>
+    <nav>
+      <button id="btn-study" class="nav-btn active">勉強する</button>
+      <button id="btn-manage" class="nav-btn">単語を管理</button>
+    </nav>
+  </header>
+
+  <!-- 勉強画面 -->
+  <div id="view-study" class="view">
+
+    <!-- カード -->
+    <div id="card-area">
+      <div id="card">
+        <div id="card-front">
+          <p id="question-text">読み込み中...</p>
+          <p class="hint">↑ スワイプ または スペースキー で答えを見る</p>
+        </div>
+        <div id="card-back" class="hidden">
+          <p id="answer-text"></p>
+          <div id="score-buttons">
+            <button id="btn-correct" class="score-btn correct">わかった ✓</button>
+            <button id="btn-wrong"   class="score-btn wrong">もう一度 ✗</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="card-counter"></p>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-area" class="hidden">
+      <div id="result-card">
+        <h2>お疲れさまでした！</h2>
+        <p id="result-text"></p>
+        <button id="btn-restart">もう一度チャレンジ</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 単語管理画面 -->
+  <div id="view-manage" class="view hidden">
+
+    <div id="manage-container">
+      <button id="btn-add-word" class="add-btn">＋ 単語を追加</button>
+
+      <!-- 追加・編集フォーム -->
+      <div id="word-form" class="hidden">
+        <h3 id="form-title">単語を追加</h3>
+        <input type="hidden" id="edit-id">
+        <label>問題（表側）</label>
+        <input type="text" id="input-question" placeholder="例: apple">
+        <label>答え（裏側）</label>
+        <input type="text" id="input-answer" placeholder="例: りんご">
+        <div class="form-buttons">
+          <button id="btn-save-word" class="save-btn">保存</button>
+          <button id="btn-cancel-form" class="cancel-btn">キャンセル</button>
+        </div>
+      </div>
+
+      <!-- 単語一覧 -->
+      <ul id="word-list"></ul>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

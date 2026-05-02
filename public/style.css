@@ -1,0 +1,379 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+/* ヘッダー */
+header {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+header h1 {
+  color: white;
+  font-size: 1.4rem;
+}
+
+nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  padding: 8px 18px;
+  border: 2px solid white;
+  border-radius: 20px;
+  background: transparent;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn.active,
+.nav-btn:hover {
+  background: white;
+  color: #764ba2;
+}
+
+/* ビュー共通 */
+.view {
+  padding: 24px 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- 勉強画面 --- */
+#card-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 70vh;
+  justify-content: center;
+}
+
+#card {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  padding: 40px 32px;
+  text-align: center;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+#card.flip {
+  animation: flipCard 0.4s ease forwards;
+}
+
+@keyframes flipCard {
+  0%   { transform: rotateY(0deg); }
+  50%  { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+#card-front,
+#card-back {
+  width: 100%;
+}
+
+#question-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 24px;
+  word-break: break-all;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 8px;
+}
+
+#answer-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #764ba2;
+  margin-bottom: 28px;
+  word-break: break-all;
+}
+
+#score-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.score-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.1s;
+}
+
+.score-btn:active {
+  transform: scale(0.96);
+}
+
+.score-btn.correct {
+  background: #4caf50;
+  color: white;
+}
+
+.score-btn.wrong {
+  background: #f44336;
+  color: white;
+}
+
+#card-counter {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+}
+
+/* 結果画面 */
+#result-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+#result-card {
+  background: white;
+  border-radius: 24px;
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  max-width: 360px;
+  width: 100%;
+}
+
+#result-card h2 {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+#result-text {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 28px;
+  line-height: 1.8;
+}
+
+#btn-restart {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+#btn-restart:hover {
+  opacity: 0.85;
+}
+
+/* --- 単語管理画面 --- */
+#manage-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.add-btn {
+  padding: 12px 24px;
+  background: white;
+  color: #764ba2;
+  border: 2px solid white;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: opacity 0.2s;
+}
+
+.add-btn:hover {
+  opacity: 0.85;
+}
+
+#word-form {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+#word-form h3 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+#word-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+
+#word-form input[type="text"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#word-form input[type="text"]:focus {
+  border-color: #764ba2;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.save-btn {
+  flex: 1;
+  padding: 12px;
+  background: #764ba2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.save-btn:hover {
+  opacity: 0.85;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 12px;
+  background: #eee;
+  color: #555;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#word-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#word-list li {
+  background: white;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.word-content {
+  flex: 1;
+}
+
+.word-question {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.word-answer {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.word-arrow {
+  color: #bbb;
+  font-size: 0.85rem;
+}
+
+.btn-edit {
+  padding: 6px 14px;
+  background: #e8eaf6;
+  color: #3949ab;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-edit:hover {
+  background: #c5cae9;
+}
+
+.btn-delete {
+  padding: 6px 14px;
+  background: #fce4ec;
+  color: #c62828;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-delete:hover {
+  background: #f8bbd0;
+}
+
+/* スマホ対応 */
+@media (max-width: 480px) {
+  #question-text,
+  #answer-text {
+    font-size: 1.6rem;
+  }
+
+  .score-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
