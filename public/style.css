@@ -50,6 +50,17 @@ nav {
   color: #764ba2;
 }
 
+.weak-btn {
+  border-color: #ffcc80;
+  color: #ffcc80;
+}
+
+.weak-btn.active,
+.weak-btn:hover {
+  background: #ffcc80;
+  color: #5d4037;
+}
+
 /* ビュー共通 */
 .view {
   padding: 24px 16px;
@@ -162,6 +173,16 @@ nav {
   font-size: 0.9rem;
 }
 
+#mode-badge {
+  background: rgba(255, 204, 128, 0.25);
+  border: 1px solid #ffcc80;
+  color: #ffcc80;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
 /* 結果画面 */
 #result-area {
   display: flex;
@@ -206,6 +227,25 @@ nav {
 }
 
 #btn-restart:hover {
+  opacity: 0.85;
+}
+
+#btn-weak-restart {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 32px;
+  background: #ff8f00;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+#btn-weak-restart:hover {
   opacity: 0.85;
 }
 

@@ -6,6 +6,14 @@ let queue = [];         // 今回の出題順（シャッフル済み）
 let currentIndex = 0;  // 今何問目か
 let score = { correct: 0, wrong: 0 };
 let isShowingAnswer = false;
+let studyMode = 'all'; // 'all' | 'weak'
+
+// 苦手な単語のID一覧（ブラウザに保存）
+let weakCardIds = new Set(JSON.parse(localStorage.getItem('weakCardIds') || '[]'));
+
+function saveWeakCardIds() {
+  localStorage.setItem('weakCardIds', JSON.stringify([...weakCardIds]));
+}
 
 // サーバーから全単語を取得する
 async function fetchWords() {
@@ -26,13 +34,42 @@ const cardArea       = document.getElementById('card-area');
 const resultArea     = document.getElementById('result-area');
 const resultText     = document.getElementById('result-text');
 
-// カードをシャッフルして勉強を開始する
-function startStudy() {
-  if (cards.length === 0) {
-    questionText.textContent = '単語がありません。「単語を管理」から追加してください！';
-    return;
+// モードバッジの表示・非表示を切り替える
+function updateModeBadge() {
+  const badge = document.getElementById('mode-badge');
+  if (studyMode === 'weak') {
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
   }
-  queue = [...cards].sort(() => Math.random() - 0.5);
+}
+
+// カードをシャッフルして勉強を開始する
+function startStudy(mode = 'all') {
+  studyMode = mode;
+  updateModeBadge();
+
+  let targetCards;
+  if (mode === 'weak') {
+    targetCards = cards.filter(c => weakCardIds.has(c.id));
+    if (targetCards.length === 0) {
+      cardArea.classList.remove('hidden');
+      resultArea.classList.add('hidden');
+      questionText.textContent = '苦手な単語はまだありません！';
+      cardFront.classList.remove('hidden');
+      cardBack.classList.add('hidden');
+      cardCounter.textContent = '';
+      return;
+    }
+  } else {
+    targetCards = [...cards];
+    if (targetCards.length === 0) {
+      questionText.textContent = '単語がありません。「単語を管理」から追加してください！';
+      return;
+    }
+  }
+
+  queue = targetCards.sort(() => Math.random() - 0.5);
   currentIndex = 0;
   score = { correct: 0, wrong: 0 };
   cardArea.classList.remove('hidden');
@@ -67,8 +104,21 @@ function showAnswer() {
 
 // 次の問題へ進む
 function nextCard(result) {
-  if (result === 'correct') score.correct++;
-  if (result === 'wrong')   score.wrong++;
+  const card = queue[currentIndex];
+
+  if (result === 'correct') {
+    score.correct++;
+    if (studyMode === 'weak') {
+      // 苦手モードで「わかった」→ 苦手リストから外す
+      weakCardIds.delete(card.id);
+      saveWeakCardIds();
+    }
+  }
+  if (result === 'wrong') {
+    score.wrong++;
+    weakCardIds.add(card.id);
+    saveWeakCardIds();
+  }
 
   currentIndex++;
   if (currentIndex >= queue.length) {
@@ -88,14 +138,35 @@ function showResult() {
   resultArea.classList.remove('hidden');
   const total = queue.length;
   const pct   = total > 0 ? Math.round((score.correct / total) * 100) : 0;
-  resultText.innerHTML =
-    `正解：<strong>${score.correct}</strong> 問 / 全 ${total} 問<br>正解率：<strong>${pct}%</strong>`;
+
+  let message = `正解：<strong>${score.correct}</strong> 問 / 全 ${total} 問<br>正解率：<strong>${pct}%</strong>`;
+
+  if (studyMode === 'weak') {
+    if (weakCardIds.size === 0) {
+      message += '<br><br>全部マスターしました！';
+    } else {
+      message += `<br><br>残りの苦手：<strong>${weakCardIds.size}</strong> 問`;
+    }
+  } else if (weakCardIds.size > 0) {
+    message += `<br><br>苦手な単語：<strong>${weakCardIds.size}</strong> 問`;
+  }
+
+  resultText.innerHTML = message;
+
+  const btnWeakRestart = document.getElementById('btn-weak-restart');
+  if (weakCardIds.size > 0) {
+    btnWeakRestart.classList.remove('hidden');
+  } else {
+    btnWeakRestart.classList.add('hidden');
+  }
 }
 
 // ボタン操作
-document.getElementById('btn-correct').addEventListener('click', () => nextCard('correct'));
-document.getElementById('btn-wrong').addEventListener('click',   () => nextCard('wrong'));
-document.getElementById('btn-restart').addEventListener('click', startStudy);
+document.getElementById('btn-wrong').addEventListener('click', () => nextCard('wrong'));
+document.getElementById('btn-restart').addEventListener('click', () => startStudy(studyMode));
+document.getElementById('btn-weak-restart').addEventListener('click', () => {
+  document.getElementById('btn-weak').click();
+});
 
 // =========================================
 // キーボード操作（PC）
@@ -111,7 +182,7 @@ document.addEventListener('keydown', (e) => {
   if (!isShowingAnswer) {
     showAnswer();
   } else {
-    nextCard(null);
+    nextCard('correct');
   }
 });
 
@@ -138,7 +209,7 @@ document.addEventListener('touchend', (e) => {
   if (!isShowingAnswer) {
     if (dy > 0) showAnswer(); // 上スワイプ → 答えを表示
   } else {
-    nextCard(null); // 答え画面でのスワイプ → 次へ
+    nextCard('correct'); // 答え画面でのスワイプ → 次へ（わかった扱い）
   }
 });
 
@@ -250,12 +321,24 @@ const viewManage = document.getElementById('view-manage');
 const btnStudy   = document.getElementById('btn-study');
 const btnManage  = document.getElementById('btn-manage');
 
+const btnWeak = document.getElementById('btn-weak');
+
 btnStudy.addEventListener('click', () => {
   viewStudy.classList.remove('hidden');
   viewManage.classList.add('hidden');
   btnStudy.classList.add('active');
+  btnWeak.classList.remove('active');
   btnManage.classList.remove('active');
-  startStudy();
+  startStudy('all');
+});
+
+btnWeak.addEventListener('click', () => {
+  viewStudy.classList.remove('hidden');
+  viewManage.classList.add('hidden');
+  btnWeak.classList.add('active');
+  btnStudy.classList.remove('active');
+  btnManage.classList.remove('active');
+  startStudy('weak');
 });
 
 btnManage.addEventListener('click', async () => {

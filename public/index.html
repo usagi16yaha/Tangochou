@@ -13,6 +13,7 @@
     <h1>単語帳</h1>
     <nav>
       <button id="btn-study" class="nav-btn active">勉強する</button>
+      <button id="btn-weak" class="nav-btn weak-btn">苦手を復習</button>
       <button id="btn-manage" class="nav-btn">単語を管理</button>
     </nav>
   </header>
@@ -22,6 +23,7 @@
 
     <!-- カード -->
     <div id="card-area">
+      <div id="mode-badge" class="hidden">⚠ 苦手モード</div>
       <div id="card">
         <div id="card-front">
           <p id="question-text">読み込み中...</p>
@@ -30,8 +32,7 @@
         <div id="card-back" class="hidden">
           <p id="answer-text"></p>
           <div id="score-buttons">
-            <button id="btn-correct" class="score-btn correct">わかった ✓</button>
-            <button id="btn-wrong"   class="score-btn wrong">もう一度 ✗</button>
+            <button id="btn-wrong" class="score-btn wrong">もう一度 ✗</button>
           </div>
         </div>
       </div>
@@ -45,6 +46,7 @@
         <h2>お疲れさまでした！</h2>
         <p id="result-text"></p>
         <button id="btn-restart">もう一度チャレンジ</button>
+        <button id="btn-weak-restart" class="hidden">苦手な単語を復習する</button>
       </div>
     </div>
 
