@@ -1,5 +1,5 @@
 const express = require('express');
-const Database = require('better-sqlite3');
+const initSqlJs = require('sql.js');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,40 +10,75 @@ const PORT = 3000;
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-// SQLite データベースを開く（なければ自動作成）
-const db = new Database(path.join(dataDir, 'words.db'));
+const DB_PATH = path.join(dataDir, 'words.db');
 
-// テーブルを作成（初回のみ）
-db.exec(`
-  CREATE TABLE IF NOT EXISTS cards (
-    id       INTEGER PRIMARY KEY AUTOINCREMENT,
-    question TEXT NOT NULL,
-    answer   TEXT NOT NULL
-  )
-`);
+let db;
 
-// サンプルデータを挿入（テーブルが空のときだけ）
-const count = db.prepare('SELECT COUNT(*) as cnt FROM cards').get();
-if (count.cnt === 0) {
-  const insert = db.prepare('INSERT INTO cards (question, answer) VALUES (?, ?)');
-  const samples = [
-    ['apple',  'りんご'],
-    ['cat',    'ねこ'],
-    ['dog',    'いぬ'],
-    ['flower', 'はな'],
-    ['sun',    'たいよう'],
-  ];
-  samples.forEach(([q, a]) => insert.run(q, a));
-  console.log('サンプルデータを追加しました！');
+// データベースをファイルに保存する
+function saveDb() {
+  const data = db.export();
+  fs.writeFileSync(DB_PATH, Buffer.from(data));
+}
+
+// データベースを初期化する
+async function initDatabase() {
+  const SQL = await initSqlJs();
+
+  // DBファイルがあれば読み込む、なければ新規作成
+  if (fs.existsSync(DB_PATH)) {
+    const fileBuffer = fs.readFileSync(DB_PATH);
+    db = new SQL.Database(fileBuffer);
+  } else {
+    db = new SQL.Database();
+  }
+
+  // テーブルを作成（初回のみ）
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cards (
+      id       INTEGER PRIMARY KEY AUTOINCREMENT,
+      question TEXT NOT NULL,
+      answer   TEXT NOT NULL
+    )
+  `);
+
+  // サンプルデータを挿入（テーブルが空のときだけ）
+  const result = db.exec('SELECT COUNT(*) as cnt FROM cards');
+  const count = result[0].values[0][0];
+
+  if (count === 0) {
+    const samples = [
+      ['apple',  'りんご'],
+      ['cat',    'ねこ'],
+      ['dog',    'いぬ'],
+      ['flower', 'はな'],
+      ['sun',    'たいよう'],
+    ];
+    samples.forEach(([q, a]) => {
+      db.run('INSERT INTO cards (question, answer) VALUES (?, ?)', [q, a]);
+    });
+    saveDb();
+    console.log('サンプルデータを追加しました！');
+  }
 }
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// sql.js の結果を { カラム名: 値 } の配列に変換するヘルパー
+function toRows(result) {
+  if (result.length === 0) return [];
+  const { columns, values } = result[0];
+  return values.map(row => {
+    const obj = {};
+    columns.forEach((col, i) => { obj[col] = row[i]; });
+    return obj;
+  });
+}
+
 // 全単語を取得
 app.get('/api/words', (req, res) => {
-  const cards = db.prepare('SELECT * FROM cards').all();
-  res.json(cards);
+  const rows = toRows(db.exec('SELECT * FROM cards'));
+  res.json(rows);
 });
 
 // 単語を追加
@@ -52,24 +87,32 @@ app.post('/api/words', (req, res) => {
   if (!question || !answer) {
     return res.status(400).json({ error: '問題と答えを入力してください' });
   }
-  const result = db.prepare('INSERT INTO cards (question, answer) VALUES (?, ?)').run(question, answer);
-  res.json({ id: result.lastInsertRowid, question, answer });
+  db.run('INSERT INTO cards (question, answer) VALUES (?, ?)', [question, answer]);
+  saveDb();
+  const idResult = db.exec('SELECT last_insert_rowid() as id');
+  const id = idResult[0].values[0][0];
+  res.json({ id, question, answer });
 });
 
 // 単語を更新
 app.put('/api/words/:id', (req, res) => {
   const { question, answer } = req.body;
-  const { id } = req.params;
-  db.prepare('UPDATE cards SET question = ?, answer = ? WHERE id = ?').run(question, answer, id);
-  res.json({ id: Number(id), question, answer });
+  const id = Number(req.params.id);
+  db.run('UPDATE cards SET question = ?, answer = ? WHERE id = ?', [question, answer, id]);
+  saveDb();
+  res.json({ id, question, answer });
 });
 
 // 単語を削除
 app.delete('/api/words/:id', (req, res) => {
-  db.prepare('DELETE FROM cards WHERE id = ?').run(req.params.id);
+  db.run('DELETE FROM cards WHERE id = ?', [Number(req.params.id)]);
+  saveDb();
   res.json({ message: '削除しました' });
 });
 
-app.listen(PORT, () => {
-  console.log(`サーバーが起動しました → http://localhost:${PORT}`);
+// データベース初期化が終わってからサーバーを起動する
+initDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`サーバーが起動しました → http://localhost:${PORT}`);
+  });
 });

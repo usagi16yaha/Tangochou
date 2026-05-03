@@ -121,12 +121,12 @@ document.addEventListener('keydown', (e) => {
 let touchStartY = 0;
 let touchStartX = 0;
 
-cardEl.addEventListener('touchstart', (e) => {
+document.addEventListener('touchstart', (e) => {
   touchStartY = e.touches[0].clientY;
   touchStartX = e.touches[0].clientX;
 }, { passive: true });
 
-cardEl.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', (e) => {
   const dy = touchStartY - e.changedTouches[0].clientY;
   const dx = Math.abs(touchStartX - e.changedTouches[0].clientX);
 
